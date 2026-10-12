@@ -692,8 +692,9 @@ def cmd_uninstall(args) -> int:
         # We may be running *through* pregame.cmd, and cmd.exe errors out if its
         # batch file vanishes mid-run. Delete it a moment after we exit instead.
         paths.remove(SHIM_PATH)
+        # A plain string, not a list: list2cmdline escapes quotes as \" which cmd.exe doesn't understand.
         subprocess.Popen(
-            ["cmd", "/c", f'ping -n 3 127.0.0.1 >nul & del /f /q "{SHIM_PATH}"'],
+            f'cmd /c ping -n 3 127.0.0.1 >nul & del /f /q "{SHIM_PATH}"',
             creationflags=NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0),
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
