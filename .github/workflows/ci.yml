@@ -93,4 +93,8 @@ jobs:
           if ($status -notmatch 'last ping: .* ok') { throw 'first ping did not succeed' }
           schtasks /Query /TN claude-pregame
           pregame uninstall
+          if ($LASTEXITCODE -ne 0) { throw 'uninstall failed' }
+          Start-Sleep -Seconds 5  # the shim is deleted just after pregame exits
           if (Test-Path "$env:USERPROFILE\.local\bin\pregame.cmd") { throw 'shim not removed' }
+          schtasks /Query /TN claude-pregame 2>$null; if ($LASTEXITCODE -eq 0) { throw 'task not removed' }
+          $global:LASTEXITCODE = 0

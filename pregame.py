@@ -636,9 +636,7 @@ def write_shim(dry_run: bool) -> None:
     """Add a `pregame` command next to `claude` (~/.local/bin)."""
     script = Path(__file__).resolve()
     if IS_WINDOWS:
-        # One line ending in `exit /b`, so cmd never re-reads this file after
-        # `pregame uninstall` deletes it ("The batch file cannot be found").
-        content = f'@"{sys.executable}" "{script}" %* & exit /b\r\n'
+        content = f'@"{sys.executable}" "{script}" %*\r\n'
     else:
         content = f'#!/bin/sh\nexec "{sys.executable}" "{script}" "$@"\n'
     if dry_run:
@@ -690,6 +688,15 @@ def cmd_uninstall(args) -> int:
     if sched.is_installed() or args.dry_run:
         sched.uninstall()
     paths = [STATE_DIR, CONFIG_DIR, SHIM_PATH] + ([INSTALL_DIR] if installed_by_script() else [])
+    if IS_WINDOWS and SHIM_PATH.exists() and not args.dry_run:
+        # We may be running *through* pregame.cmd, and cmd.exe errors out if its
+        # batch file vanishes mid-run. Delete it a moment after we exit instead.
+        paths.remove(SHIM_PATH)
+        subprocess.Popen(
+            ["cmd", "/c", f'ping -n 3 127.0.0.1 >nul & del /f /q "{SHIM_PATH}"'],
+            creationflags=NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0),
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
     for path in dict.fromkeys(paths):
         if not path.exists():
             continue
