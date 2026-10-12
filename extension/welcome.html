@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pregame is on</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { max-width: 560px; margin: 48px auto; padding: 0 16px; }
+    h1 { font-size: 26px; }
+    h1 img { width: 36px; height: 36px; }
+    ol { padding-left: 20px; } li { margin: 8px 0; }
+    .timeline { font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre; overflow-x: auto; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1><img src="icons/icon128.png" alt="">Pregame is on</h1>
+
+    <div id="status" class="card">Checking your Claude sign-in…</div>
+
+    <section class="card">
+      <strong>What it does</strong>
+      <p>Claude's usage limit resets 5 hours after your first message. Pregame sends one tiny message
+      for you as soon as a window resets, so when you start working your next reset is already on its way.</p>
+      <div class="timeline">without:  you start 9:00 ─────────────── reset 14:00
+with:     auto 6:00 ─── you start 9:00 ── reset 11:00</div>
+    </section>
+
+    <section class="card">
+      <strong>Two quick things</strong>
+      <ol>
+        <li><strong>Pin it:</strong> click the puzzle-piece icon in your toolbar, then the pin next to Pregame. The badge shows the time until your next reset.</li>
+        <li><strong>Pick your hours:</strong> open Pregame and set when it should work. Start it 2–4 hours before you usually begin.</li>
+      </ol>
+      <p class="sub">Pings go into incognito chats, so they never show up in your history. Pregame runs while your browser is open.</p>
+    </section>
+  </main>
+  <script type="module" src="welcome.js"></script>
+</body>
+</html>

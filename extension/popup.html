@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pregame for Claude</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="popup">
+    <h1><img src="icons/icon32.png" alt="">Pregame for Claude</h1>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <section class="card">
+      <div class="label" id="headline-label">Next reset</div>
+      <div class="big" id="headline">…</div>
+      <div class="sub" id="subline">&nbsp;</div>
+      <div class="bar"><div id="usage-bar"></div></div>
+      <div class="sub" id="usage-text">&nbsp;</div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <label for="enabled"><strong>Auto-start my window</strong></label>
+        <label class="switch"><input type="checkbox" id="enabled"><span></span></label>
+      </div>
+      <div class="hours">
+        <span class="sub">Only between</span>
+        <span class="times"><input type="time" id="start"> and <input type="time" id="end"></span>
+      </div>
+      <div class="row">
+        <label for="notify" class="sub">Notify me when a window starts</label>
+        <label class="switch"><input type="checkbox" id="notify"><span></span></label>
+      </div>
+    </section>
+
+    <button id="start-now">Start a window now</button>
+    <div class="foot" id="foot">&nbsp;</div>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
