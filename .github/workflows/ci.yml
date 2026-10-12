@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: tests (${{ matrix.os }}, py${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests (real scheduler install on Linux and Windows)
+        run: python -m unittest discover -s tests -v
+        env:
+          PREGAME_REAL_INSTALL: ${{ runner.os != 'macOS' && '1' || '' }}
+
+  installer:
+    name: one-line installer (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Put a fake claude on PATH (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p "$HOME/fakebin"
+          printf '#!/bin/sh\nexec python3 "%s/tests/fake_claude.py" "$@"\n' "$GITHUB_WORKSPACE" > "$HOME/fakebin/claude"
+          chmod +x "$HOME/fakebin/claude"
+          echo "$HOME/fakebin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install, check, uninstall (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          sh install.sh
+          pregame status | tee status.txt
+          grep -E "last ping: .* ok" status.txt
+          pregame uninstall
+          test ! -e "$HOME/.local/bin/pregame"
+
+      - name: Put a fake claude on PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bin = "$env:USERPROFILE\fakebin"
+          New-Item -ItemType Directory -Force $bin | Out-Null
+          Set-Content "$bin\claude.cmd" "@python `"$env:GITHUB_WORKSPACE\tests\fake_claude.py`" %*"
+          $bin | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          "$env:USERPROFILE\.local\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Install, check, uninstall (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./install.ps1
+          $status = pregame status | Out-String
+          Write-Host $status
+          if ($status -notmatch 'last ping: .* ok') { throw 'first ping did not succeed' }
+          schtasks /Query /TN claude-pregame
+          pregame uninstall
+          if (Test-Path "$env:USERPROFILE\.local\bin\pregame.cmd") { throw 'shim not removed' }
