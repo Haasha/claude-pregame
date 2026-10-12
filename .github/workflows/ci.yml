@@ -62,6 +62,9 @@ jobs:
       - name: Install, check, uninstall (macOS/Linux)
         if: runner.os != 'Windows'
         run: |
+          # CI can run at any hour; don't let the default 06:00-23:00 skip the first ping.
+          mkdir -p "$HOME/.config/claude-pregame"
+          echo '{"active_hours": null}' > "$HOME/.config/claude-pregame/config.json"
           sh install.sh
           pregame status | tee status.txt
           grep -E "last ping: .* ok" status.txt
@@ -81,6 +84,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          # CI can run at any hour; don't let the default 06:00-23:00 skip the first ping.
+          New-Item -ItemType Directory -Force "$env:APPDATA\claude-pregame" | Out-Null
+          Set-Content "$env:APPDATA\claude-pregame\config.json" '{"active_hours": null}'
           ./install.ps1
           $status = pregame status | Out-String
           Write-Host $status
